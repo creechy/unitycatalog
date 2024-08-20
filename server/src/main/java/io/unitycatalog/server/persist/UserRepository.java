@@ -8,6 +8,7 @@ import io.unitycatalog.server.model.User;
 import io.unitycatalog.server.persist.dao.UserDAO;
 import io.unitycatalog.server.persist.utils.HibernateUtils;
 import io.unitycatalog.server.persist.utils.PagedListingHelper;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -45,9 +46,9 @@ public class UserRepository {
     try (Session session = SESSION_FACTORY.openSession()) {
       Transaction tx = session.beginTransaction();
       try {
-        if (getUserByName(session, user.getName()) != null) {
+        if (getUserByEmail(session, user.getEmail()) != null) {
           throw new BaseException(
-              ErrorCode.ALREADY_EXISTS, "User already exists: " + user.getName());
+              ErrorCode.ALREADY_EXISTS, "User already exists: " + user.getEmail());
         }
         session.persist(UserDAO.from(user));
         tx.commit();
@@ -149,6 +150,7 @@ public class UserRepository {
         if (updateUser.getExternalId() != null) {
           userDAO.setExternalId(updateUser.getExternalId());
         }
+        userDAO.setUpdatedAt(new Date());
         session.merge(userDAO);
         tx.commit();
         return userDAO.toUser();

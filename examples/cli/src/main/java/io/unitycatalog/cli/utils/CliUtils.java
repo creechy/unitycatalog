@@ -29,6 +29,8 @@ public class CliUtils {
   public static final String VOLUME = "volume";
   public static final String TABLE = "table";
 
+  public static final String USER = "user";
+
   public static final String FUNCTION = "function";
   public static final String CREATE = "create";
   public static final String LIST = "list";
@@ -178,6 +180,25 @@ public class CliUtils {
                       EXECUTE,
                       new CliOptions(
                           List.of(CliParams.FULL_NAME, CliParams.INPUT_PARAMS), List.of()));
+                }
+              });
+          put(
+              USER,
+              new HashMap<String, CliOptions>() {
+                {
+                  put(
+                      CREATE,
+                      new CliOptions(
+                          List.of(CliParams.NAME, CliParams.EMAIL),
+                          List.of(CliParams.EXTERNAL_ID)));
+                  put(LIST, new CliOptions(List.of(), List.of(CliParams.MAX_RESULTS)));
+                  put(GET, new CliOptions(List.of(CliParams.EMAIL), List.of()));
+                  put(
+                      UPDATE,
+                      new CliOptions(
+                          List.of(CliParams.EMAIL),
+                          List.of(CliParams.NAME, CliParams.EXTERNAL_ID)));
+                  put(DELETE, new CliOptions(List.of(CliParams.EMAIL), List.of()));
                 }
               });
         }

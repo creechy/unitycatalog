@@ -46,7 +46,10 @@ public enum CliParams {
       "output",
       "To indicate CLI output format preference. Supported values are json and jsonPretty.",
       "output"),
-  FORCE("force", "To force delete the entity", "force");
+  FORCE("force", "To force delete the entity", "force"),
+  EMAIL("email", "The email address of the user.", "email"),
+  EXTERNAL_ID("external_id", "The identity provider external id for the user.", "external_id");
+
   private final String value;
   private final String helpMessage;
   private final String serverParam;

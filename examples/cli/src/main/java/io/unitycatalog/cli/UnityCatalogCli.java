@@ -99,6 +99,10 @@ public class UnityCatalogCli {
         case CliUtils.FUNCTION:
           FunctionCli.handle(cmd, apiClient);
           break;
+        case CliUtils.USER:
+          UserCli.handle(cmd, apiClient);
+          break;
+
         default:
           CliUtils.printHelp();
       }

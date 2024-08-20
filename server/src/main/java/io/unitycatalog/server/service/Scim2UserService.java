@@ -1,5 +1,7 @@
 package io.unitycatalog.server.service;
 
+import static io.unitycatalog.server.model.User.StateEnum.ENABLED;
+
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.server.annotation.*;
@@ -100,12 +102,12 @@ public class Scim2UserService {
   }
 
   @Get("/{id}")
-  public HttpResponse getUser(@Param("id") String id) {
+  public HttpResponse getScimUser(@Param("id") String id) {
     return HttpResponse.ofJson(asUserResource(USER_REPOSITORY.getUser(id)));
   }
 
   @Put("/{id}")
-  public HttpResponse updateUser(@Param("id") String id, UserResource userResource) {
+  public HttpResponse updateScimUser(@Param("id") String id, UserResource userResource) {
     if (!id.equals(userResource.getId())) {
       throw new Scim2RuntimeException(new ResourceConflictException("User id mismatch."));
     }
@@ -129,7 +131,7 @@ public class Scim2UserService {
   }
 
   @Delete("/{id}")
-  public HttpResponse deleteUser(@Param("id") String id) {
+  public HttpResponse deleteScimUser(@Param("id") String id) {
     User user = USER_REPOSITORY.getUser(id);
     authorizer.clearAuthorizationsForPrincipal(
         UUID.fromString(Objects.requireNonNull(user.getId())));
@@ -147,8 +149,8 @@ public class Scim2UserService {
     Calendar lastModified = Calendar.getInstance();
     if (user.getUpdatedAt() != null) {
       lastModified.setTimeInMillis(user.getUpdatedAt());
+      meta.setLastModified(lastModified);
     }
-    meta.setLastModified(lastModified);
     meta.setResourceType("User");
 
     UserResource userResource = new UserResource();
@@ -158,7 +160,7 @@ public class Scim2UserService {
         .setEmails(List.of(new Email().setValue(user.getEmail()).setPrimary(true)));
     userResource.setId(user.getId());
     userResource.setMeta(meta);
-    userResource.setActive(true);
+    userResource.setActive(user.getState().equals(ENABLED));
     userResource.setExternalId(user.getExternalId());
 
     return userResource;
