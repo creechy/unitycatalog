@@ -30,6 +30,7 @@ public class CliUtils {
   public static final String TABLE = "table";
 
   public static final String USER = "user";
+  public static final String PERMISSION = "permission";
 
   public static final String FUNCTION = "function";
   public static final String CREATE = "create";
@@ -199,6 +200,35 @@ public class CliUtils {
                           List.of(CliParams.EMAIL),
                           List.of(CliParams.NAME, CliParams.EXTERNAL_ID)));
                   put(DELETE, new CliOptions(List.of(CliParams.EMAIL), List.of()));
+                }
+              });
+          put(
+              PERMISSION,
+              new HashMap<String, CliOptions>() {
+                {
+                  put(
+                      CREATE,
+                      new CliOptions(
+                          List.of(
+                              CliParams.FULL_NAME,
+                              CliParams.EMAIL,
+                              CliParams.PRIVILEGE,
+                              CliParams.RESOURCE),
+                          List.of()));
+                  put(
+                      LIST,
+                      new CliOptions(
+                          List.of(CliParams.FULL_NAME, CliParams.RESOURCE),
+                          List.of(CliParams.MAX_RESULTS)));
+                  put(
+                      DELETE,
+                      new CliOptions(
+                          List.of(
+                              CliParams.FULL_NAME,
+                              CliParams.EMAIL,
+                              CliParams.PRIVILEGE,
+                              CliParams.RESOURCE),
+                          List.of()));
                 }
               });
         }

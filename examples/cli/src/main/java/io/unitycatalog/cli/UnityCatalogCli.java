@@ -102,6 +102,9 @@ public class UnityCatalogCli {
         case CliUtils.USER:
           UserCli.handle(cmd, apiClient);
           break;
+        case CliUtils.PERMISSION:
+          PermissionCli.handle(cmd, apiClient);
+          break;
 
         default:
           CliUtils.printHelp();

@@ -48,7 +48,9 @@ public enum CliParams {
       "output"),
   FORCE("force", "To force delete the entity", "force"),
   EMAIL("email", "The email address of the user.", "email"),
-  EXTERNAL_ID("external_id", "The identity provider external id for the user.", "external_id");
+  EXTERNAL_ID("external_id", "The identity provider external id for the user.", "external_id"),
+  PRIVILEGE("privilege", "The object privilege.", "privilege"),
+  RESOURCE("resource", "The object resource type.", "resource");
 
   private final String value;
   private final String helpMessage;
