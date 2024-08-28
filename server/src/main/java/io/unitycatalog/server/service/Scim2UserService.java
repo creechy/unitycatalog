@@ -104,13 +104,12 @@ public class Scim2UserService {
           pictureUrl = userResource.getPhotos().get(0).getValue().toString();
         }
         User user =
-            USER_REPOSITORY
-                .createUser(
-                    new CreateUser()
-                        .name(userResource.getDisplayName())
-                        .email(primaryEmail.getValue())
-                        .externalId(userResource.getExternalId()))
-                .pictureUrl(pictureUrl);
+            USER_REPOSITORY.createUser(
+                new CreateUser()
+                    .name(userResource.getDisplayName())
+                    .email(primaryEmail.getValue())
+                    .externalId(userResource.getExternalId())
+                    .pictureUrl(pictureUrl));
         return HttpResponse.ofJson(asUserResource(user));
       } else {
         throw e;
@@ -118,7 +117,7 @@ public class Scim2UserService {
     }
   }
 
-  @Get("/current")
+  @Get("/self")
   @AuthorizeExpression("#principal != null")
   @AuthorizeKey(METASTORE)
   public HttpResponse getCurrentUser() {
