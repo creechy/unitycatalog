@@ -123,7 +123,7 @@ paths:
     get:
       tags:
         - Users
-      operationId: getCurrentUser
+      operationId: getSelf
       summary: Get the current user
       description: |
         Gets the user from the jwt token provided.
