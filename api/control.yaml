@@ -25,7 +25,7 @@ paths:
         '200':
           description: The new user was successfully created.
           content:
-            application/json:
+            application/scim+json:
               schema:
                 $ref: '#/components/schemas/UserResource'
     get:
@@ -60,7 +60,7 @@ paths:
         '200':
           description: The user list was successfully retrieved.
           content:
-            application/json:
+            application/scim+json:
               schema:
                 $ref: '#/components/schemas/UserResourceList'
   /scim2/Users/{id}:
@@ -82,7 +82,7 @@ paths:
         '200':
           description: The user was successfully retrieved.
           content:
-            application/json:
+            application/scim+json:
               schema:
                 $ref: '#/components/schemas/UserResource'
     put:
@@ -101,7 +101,7 @@ paths:
         '200':
           description: The user was successfully updated.
           content:
-            application/json:
+            application/scim+json:
               schema:
                 $ref: '#/components/schemas/UserResource'
     delete:
@@ -115,7 +115,7 @@ paths:
         '200':
           description: The user was successfully deleted.
           content:
-            application/json:
+            application/scim+json:
               schema: {}
   /scim2/Users/self:
     get:
