@@ -62,9 +62,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserResource'
+                $ref: '#/components/schemas/UserResourceList'
   /scim2/Users/{id}:
     parameters:
       - name: id
@@ -206,6 +204,43 @@ components:
         - id
         - name
         - email
+    UserResourceList:
+      description: List of SCIM User resources.
+      type: object
+      properties:
+        totalResults:
+          description: The total number of results.
+          type: integer
+          format: int32
+        itemsPerPage:
+            description: The number of items per page.
+            type: integer
+            format: int32
+        startIndex:
+            description: The index of the first result.
+            type: integer
+            format: int32
+        Resources:
+            description: The list of User resources.
+            type: array
+            items:
+                $ref: '#/components/schemas/UserResource'
+        id:
+            description: User list id metadata.
+            type: string
+        externalId:
+            description: User list external id metadata.
+            type: string
+        meta:
+          description: The metadata of the user.
+          type: object
+          properties:
+            resourceType:
+              type: string
+            created:
+              type: string
+            lastModified:
+              type: string
     UserResource:
       description: SCIM provides a resource type for "User" resources.
       type: object
@@ -232,11 +267,9 @@ components:
           type: object
           properties:
             created:
-              type: integer
-              format: int64
+              type: string
             lastModified:
-              type: integer
-              format: int64
+              type: string
         photos:
           description: The photos of the user.
           type: array

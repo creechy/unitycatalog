@@ -11,6 +11,7 @@ import com.unboundid.scim2.common.exceptions.PreconditionFailedException;
 import com.unboundid.scim2.common.exceptions.ResourceConflictException;
 import com.unboundid.scim2.common.exceptions.ScimException;
 import com.unboundid.scim2.common.filters.Filter;
+import com.unboundid.scim2.common.messages.ListResponse;
 import com.unboundid.scim2.common.types.Email;
 import com.unboundid.scim2.common.types.Meta;
 import com.unboundid.scim2.common.types.Photo;
@@ -51,7 +52,9 @@ public class Scim2UserService {
   public Scim2UserService() {}
 
   @Get("")
-  public HttpResponse getScimUsers(
+  @ResponseConverter(Scim2JsonResponseConverter.class)
+  @Produces("application/json")
+  public ListResponse<UserResource> getScimUsers(
       @Param("filter") Optional<String> filter,
       @Param("startIndex") Optional<Integer> startIndex,
       @Param("count") Optional<Integer> count) {
@@ -65,11 +68,27 @@ public class Scim2UserService {
             .skip(startIndex.orElse(1) - 1)
             .limit(count.orElse(50))
             .toList();
-    return HttpResponse.ofJson(userResourcesList);
+
+    Meta meta = new Meta();
+    meta.setCreated(Calendar.getInstance());
+    meta.setLastModified(Calendar.getInstance());
+    meta.setResourceType("User");
+
+    ListResponse<UserResource> userResources =
+        new ListResponse<>(
+            userResourcesList.size(),
+            userResourcesList,
+            startIndex.orElse(1),
+            userResourcesList.size());
+    userResources.setMeta(meta);
+
+    return userResources;
   }
 
   @Post("")
-  public HttpResponse createScimUser(UserResource userResource) {
+  @ResponseConverter(Scim2JsonResponseConverter.class)
+  @Produces("application/json")
+  public UserResource createScimUser(UserResource userResource) {
     // Get primary email address
     Email primaryEmail =
         userResource.getEmails().stream()
@@ -82,7 +101,7 @@ public class Scim2UserService {
 
     try {
       User user = USER_REPOSITORY.getUserByEmail(primaryEmail.getValue());
-      return HttpResponse.ofJson(asUserResource(user));
+      return asUserResource(user);
     } catch (BaseException e) {
       if (e.getErrorCode() == ErrorCode.NOT_FOUND) {
         String pictureUrl = "";
@@ -96,7 +115,7 @@ public class Scim2UserService {
                     .email(primaryEmail.getValue())
                     .externalId(userResource.getExternalId())
                     .pictureUrl(pictureUrl));
-        return HttpResponse.ofJson(asUserResource(user));
+        return asUserResource(user);
       } else {
         throw e;
       }
@@ -104,20 +123,26 @@ public class Scim2UserService {
   }
 
   @Get("/self")
-  public HttpResponse getCurrentUser() {
+  @ResponseConverter(Scim2JsonResponseConverter.class)
+  @Produces("application/json")
+  public UserResource getCurrentUser() {
     ServiceRequestContext ctx = ServiceRequestContext.current();
     DecodedJWT decodedJWT = ctx.attr(AuthDecorator.DECODED_JWT_ATTR);
     Claim sub = decodedJWT.getClaim("sub");
-    return HttpResponse.ofJson(asUserResource(USER_REPOSITORY.getUserByEmail(sub.asString())));
+    return asUserResource(USER_REPOSITORY.getUserByEmail(sub.asString()));
   }
 
   @Get("/{id}")
-  public HttpResponse getUser(@Param("id") String id) {
-    return HttpResponse.ofJson(asUserResource(USER_REPOSITORY.getUser(id)));
+  @ResponseConverter(Scim2JsonResponseConverter.class)
+  @Produces("application/json")
+  public UserResource getUser(@Param("id") String id) {
+    return asUserResource(USER_REPOSITORY.getUser(id));
   }
 
   @Put("/{id}")
-  public HttpResponse updateUser(@Param("id") String id, UserResource userResource) {
+  @ResponseConverter(Scim2JsonResponseConverter.class)
+  @Produces("application/json")
+  public UserResource updateUser(@Param("id") String id, UserResource userResource) {
     UserResource user = asUserResource(USER_REPOSITORY.getUser(id));
     if (!id.equals(userResource.getId())) {
       throw new Scim2RuntimeException(new ResourceConflictException("User id mismatch."));
@@ -142,7 +167,7 @@ public class Scim2UserService {
     UpdateUser updateUser =
         new UpdateUser().newName(newName).email(primaryEmail.getValue()).externalId(externalId);
 
-    return HttpResponse.ofJson(asUserResource(USER_REPOSITORY.updateUser(id, updateUser)));
+    return asUserResource(USER_REPOSITORY.updateUser(id, updateUser));
   }
 
   @Delete("/{id}")
