@@ -52,7 +52,6 @@ public class Scim2UserService {
   public Scim2UserService() {}
 
   @Get("")
-  @ResponseConverter(Scim2JsonResponseConverter.class)
   @Produces("application/scim+json")
   @StatusCode(200)
   public ListResponse<UserResource> getScimUsers(
@@ -89,7 +88,6 @@ public class Scim2UserService {
   }
 
   @Post("")
-  @ResponseConverter(Scim2JsonResponseConverter.class)
   @Produces("application/scim+json")
   @StatusCode(201)
   public UserResource createScimUser(UserResource userResource) {
@@ -128,7 +126,6 @@ public class Scim2UserService {
   }
 
   @Get("/self")
-  @ResponseConverter(Scim2JsonResponseConverter.class)
   @Produces("application/scim+json")
   @StatusCode(200)
   public UserResource getCurrentUser() {
@@ -139,7 +136,6 @@ public class Scim2UserService {
   }
 
   @Get("/{id}")
-  @ResponseConverter(Scim2JsonResponseConverter.class)
   @Produces("application/scim+json")
   @StatusCode(200)
   public UserResource getUser(@Param("id") String id) {
@@ -147,7 +143,6 @@ public class Scim2UserService {
   }
 
   @Put("/{id}")
-  @ResponseConverter(Scim2JsonResponseConverter.class)
   @Produces("application/scim+json")
   @StatusCode(200)
   public UserResource updateUser(@Param("id") String id, UserResource userResource) {
