@@ -54,6 +54,7 @@ public class Scim2UserService {
   @Get("")
   @ResponseConverter(Scim2JsonResponseConverter.class)
   @Produces("application/json")
+  @StatusCode(200)
   public ListResponse<UserResource> getScimUsers(
       @Param("filter") Optional<String> filter,
       @Param("startIndex") Optional<Integer> startIndex,
@@ -88,6 +89,7 @@ public class Scim2UserService {
   @Post("")
   @ResponseConverter(Scim2JsonResponseConverter.class)
   @Produces("application/json")
+  @StatusCode(201)
   public UserResource createScimUser(UserResource userResource) {
     // Get primary email address
     Email primaryEmail =
@@ -125,6 +127,7 @@ public class Scim2UserService {
   @Get("/self")
   @ResponseConverter(Scim2JsonResponseConverter.class)
   @Produces("application/json")
+  @StatusCode(200)
   public UserResource getCurrentUser() {
     ServiceRequestContext ctx = ServiceRequestContext.current();
     DecodedJWT decodedJWT = ctx.attr(AuthDecorator.DECODED_JWT_ATTR);
@@ -135,6 +138,7 @@ public class Scim2UserService {
   @Get("/{id}")
   @ResponseConverter(Scim2JsonResponseConverter.class)
   @Produces("application/json")
+  @StatusCode(200)
   public UserResource getUser(@Param("id") String id) {
     return asUserResource(USER_REPOSITORY.getUser(id));
   }
@@ -142,6 +146,7 @@ public class Scim2UserService {
   @Put("/{id}")
   @ResponseConverter(Scim2JsonResponseConverter.class)
   @Produces("application/json")
+  @StatusCode(200)
   public UserResource updateUser(@Param("id") String id, UserResource userResource) {
     UserResource user = asUserResource(USER_REPOSITORY.getUser(id));
     if (!id.equals(userResource.getId())) {
@@ -174,7 +179,7 @@ public class Scim2UserService {
   public HttpResponse deleteUser(@Param("id") String id) {
     User user = USER_REPOSITORY.getUser(id);
     USER_REPOSITORY.deleteUser(user.getId());
-    return HttpResponse.of(HttpStatus.OK);
+    return HttpResponse.of(HttpStatus.NO_CONTENT);
   }
 
   public UserResource asUserResource(User user) {
