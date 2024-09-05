@@ -13,7 +13,7 @@ import com.linecorp.armeria.server.annotation.ResponseConverterFunction;
 
 public class Scim2JsonResponseConverter implements ResponseConverterFunction {
 
-    /*
+  /*
    Okta doesn't appear to like fields with nulls in the JSON coming back from
    the POST method (aka create-user). Get errors like
 
