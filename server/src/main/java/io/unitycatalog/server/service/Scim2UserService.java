@@ -18,14 +18,14 @@ import com.unboundid.scim2.common.types.Photo;
 import com.unboundid.scim2.common.types.UserResource;
 import com.unboundid.scim2.common.utils.FilterEvaluator;
 import com.unboundid.scim2.common.utils.Parser;
-import io.unitycatalog.control.model.CreateUser;
-import io.unitycatalog.control.model.UpdateUser;
 import io.unitycatalog.control.model.User;
 import io.unitycatalog.server.exception.BaseException;
 import io.unitycatalog.server.exception.ErrorCode;
 import io.unitycatalog.server.exception.GlobalExceptionHandler;
 import io.unitycatalog.server.exception.Scim2RuntimeException;
 import io.unitycatalog.server.persist.UserRepository;
+import io.unitycatalog.server.persist.model.CreateUser;
+import io.unitycatalog.server.persist.model.UpdateUser;
 import java.net.URI;
 import java.util.Calendar;
 import java.util.List;
@@ -63,11 +63,13 @@ public class Scim2UserService {
     FilterEvaluator filterEvaluator = new FilterEvaluator();
 
     List<UserResource> userResourcesList =
-        USER_REPOSITORY.listUsers().stream()
+        USER_REPOSITORY
+            .listUsers(
+                startIndex.orElse(1) - 1,
+                count.orElse(50),
+                m -> match(filterEvaluator, userFilter, asUserResource(m)))
+            .stream()
             .map(this::asUserResource)
-            .filter(m -> match(filterEvaluator, userFilter, m))
-            .skip(startIndex.orElse(1) - 1)
-            .limit(count.orElse(50))
             .toList();
 
     Meta meta = new Meta();
@@ -101,25 +103,26 @@ public class Scim2UserService {
                     new Scim2RuntimeException(
                         new PreconditionFailedException("User does not have a primary email.")));
 
+    String pictureUrl = "";
+    if (userResource.getPhotos() != null && !userResource.getPhotos().isEmpty()) {
+      pictureUrl = userResource.getPhotos().get(0).getValue().toString();
+    }
     try {
-      User user = USER_REPOSITORY.getUserByEmail(primaryEmail.getValue());
+      User user =
+          USER_REPOSITORY.createUser(
+              CreateUser.builder()
+                  .name(userResource.getDisplayName())
+                  .email(primaryEmail.getValue())
+                  .active(userResource.getActive())
+                  .externalId(userResource.getExternalId())
+                  .pictureUrl(pictureUrl)
+                  .build());
       return asUserResource(user);
     } catch (BaseException e) {
-      if (e.getErrorCode() == ErrorCode.NOT_FOUND) {
-        String pictureUrl = "";
-        if (userResource.getPhotos() != null && !userResource.getPhotos().isEmpty()) {
-          pictureUrl = userResource.getPhotos().get(0).getValue().toString();
-        }
-        User user =
-            USER_REPOSITORY.createUser(
-                new CreateUser()
-                    .name(userResource.getDisplayName())
-                    .email(primaryEmail.getValue())
-                    .externalId(userResource.getExternalId())
-                    .pictureUrl(pictureUrl));
-        return asUserResource(user);
+      if (e.getErrorCode() == ErrorCode.ALREADY_EXISTS) {
+        throw new Scim2RuntimeException(new ResourceConflictException(e.getMessage()));
       } else {
-        throw e;
+        throw new Scim2RuntimeException(new BadRequestException(e.getMessage()));
       }
     }
   }
@@ -152,25 +155,13 @@ public class Scim2UserService {
     if (!id.equals(userResource.getId())) {
       throw new Scim2RuntimeException(new ResourceConflictException("User id mismatch."));
     }
-    // Get primary email address
-    Email primaryEmail =
-        userResource.getEmails().stream()
-            .filter(Email::getPrimary)
-            .findFirst()
-            .orElse(user.getEmails().get(0));
-
-    String newName = userResource.getDisplayName();
-    if (newName == null) {
-      newName = user.getDisplayName();
-    }
-
-    String externalId = userResource.getExternalId();
-    if (externalId == null) {
-      externalId = user.getExternalId();
-    }
 
     UpdateUser updateUser =
-        new UpdateUser().newName(newName).email(primaryEmail.getValue()).externalId(externalId);
+        UpdateUser.builder()
+            .name(userResource.getDisplayName())
+            .active(userResource.getActive())
+            .externalId(userResource.getExternalId())
+            .build();
 
     return asUserResource(USER_REPOSITORY.updateUser(id, updateUser));
   }
@@ -209,7 +200,7 @@ public class Scim2UserService {
         .setPhotos(List.of(new Photo().setValue(URI.create(pictureUrl))));
     userResource.setId(user.getId());
     userResource.setMeta(meta);
-    userResource.setActive(true);
+    userResource.setActive(user.getState() == User.StateEnum.ENABLED);
     userResource.setExternalId(user.getExternalId());
 
     return userResource;
